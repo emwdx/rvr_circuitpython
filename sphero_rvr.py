@@ -70,7 +70,7 @@ class RVRDrive:
 
     def drive_to_position_si(self, heading,x, y, speed):
         raw_motor_data = [
-            0x8D, 0x3E, 0x12, 0x01, 0x16, 0x38, 0x00]
+            0x8D, 0x3E, 0x12, 0x01, 0x16, 0x38, 0x00,0x00]
 
         bytesHeading = self.float_to_hex(heading)
         bytesX = self.float_to_hex(x)
@@ -81,13 +81,17 @@ class RVRDrive:
         header.extend(bytesX)
         header.extend(bytesY)
         header.extend(bytesSpeed)
+
+        flags = bytearray(0x00)
+        header.extend(flags)
         ending = bytearray([~((sum(header) - 0x8D) % 256) & 0x00FF, 0xD8])
         header.extend(ending)
         #raw_motor_data.extend([~((sum(raw_motor_data) - 0x8D) % 256) & 0x00FF, 0xD8])
         #print(header)
         self._uart.write(header)
-        response = bytearray(4)
-        self._uart.read
+        response = bytearray(10)
+        self._uart.readinto(response)
+        print(response)
 
     def setMotors(self,left,right):
         # First set the direction of each motor based on its value
@@ -122,5 +126,3 @@ class RVRDrive:
         self.uart.write(bytearray(drive_data))
 
         return
-
-

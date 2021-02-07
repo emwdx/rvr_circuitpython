@@ -8,5 +8,7 @@ from sphero_rvr import *
 
 
 rvr = RVRDrive()
-
-rvr.drive_to_position_si(0.0,0.5,1.0,100)
+time.sleep(2.0)
+rvr.drive_to_position_si(0.0,0.05,0.0,0.0)
+time.sleep(2.0)
+rvr.drive_to_position_si(90.0,0.0,0.0,0.0)
