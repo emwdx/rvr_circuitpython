@@ -23,6 +23,8 @@ SOFTWARE.
 
 '''
 
+# Scroll down to line 86 if you want to skip the explanation of the rest of the code.
+
 import board
 import busio
 import time
@@ -83,29 +85,36 @@ def drive_to_position_si(yaw_angle, x, y, speed):
 
 #***************************************************************#
 
-# This code sets up the movement of the RVR to specific positions on the floor.
+# This code sets up the movement of the RVR to specific positions on the floor. You can change the SPEED, TILE_WIDTH, and coordinates lines to make this work for your own list of points.
+
 # The SPEED variable is the speed in m/s that the RVR will move. This is more accurate for lower speeds, but 0.6 works pretty well.
 SPEED = 0.6
 
 # The tiles on my floor are 80 centimeters square. You can change this to match the size of the tiles on your floor.
 TILE_WIDTH = 0.8
 
-# This list contains the coordinates that my RVR travels on the floor. You can change this to match your own set of coordinates that you want the RVR to travel to.
+# This list contains the coordinates that my RVR travels on the floor in units of tiles. You can change this to match your own set of tile coordinates that you want the RVR to travel to.
 # From testing, this works best if the distance traveled between points is at least 50 centimeters or so.
-coordinates = [[0,0],[0,2],[-1,2],[-1,3],[2,3],[2,2],[0,1],[0,0],[0,0.1]]
+COORDINATES = [[0,0],[0,2],[-1,2],[-1,3],[2,3],[2,2],[0,1],[0,0],[0,0.1]]
 
-# You can leave the code below as is
+# You can leave the code below as it is and it should work. I've added some comments to explain it as well.
+
+# The for-loop below turns the tile coordinates into real world positions in meters.
 positions = []
-for pair in coordinates:
+for pair in COORDINATES
     positions.append([0.0,pair[0]*TILE_WIDTH,pair[1]*TILE_WIDTH])
 
+# This for-loop iterates over the pairs of points in the list
 for i in range(len(positions)-1):
     current_position = positions[i]
     next_position = positions[i+1]
     dx = next_position[1] - current_position[1]
     dy = next_position[2] - current_position[2]
+    
+    # This calculates a heading for the movement about to occur.
     raw_angle = -180.0/3.1415926*math.atan2(dx,dy)
-
+    
+    # This line 
     command = drive_to_position_si(raw_angle,next_position[1],next_position[2],SPEED)
     uart.write(command)
     
