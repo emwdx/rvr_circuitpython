@@ -137,15 +137,6 @@ class RVRDrive:
         return bytearray(output_packet)
 
 
-        flags = bytearray(0x00)
-        header.extend(flags)
-        ending = bytearray([~((sum(header) - 0x8D) % 256) & 0x00FF, 0xD8])
-        header.extend(ending)
-        self._uart.write(header)
-        response = bytearray(10)
-        self._uart.readinto(response)
-        print(response)
-
     def reset_yaw(self):
         drive_data = [0x8D, 0x3E, 0x12, 0x01, 0x16, 0x06, 0x00]
 
