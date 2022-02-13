@@ -1,28 +1,22 @@
-# Write your code here :-)
-
 import board
 import busio
-import time
 import struct
+import time
 
 class RawMotorModes:
     OFF = 0
     FORWARD = 1
     BACKWARD = 2
 
-
 uart = busio.UART(board.D2, board.D3, baudrate=115200)
 
-last_packet = bytearray([])
 class RVRDrive:
-
-
-    def __init__(self,uart = uart):
+    def __init__(self):
         self._uart = uart
+        self._location = [0.0,0.0,0.0]
         
-
-
-    def drive(self,speed, heading):
+    
+    def drive(self,speed,heading):
 
         flags = 0x00
         speed = int(speed)
@@ -39,17 +33,17 @@ class RVRDrive:
 
         drive_data.extend([~((sum(drive_data) - 0x8D) % 256) & 0x00FF, 0xD8])
 
-        self.uart.write(bytearray(drive_data))
+        self._uart.write(bytearray(drive_data))
+
+        return
+
+    
+    def stop(self):
+        self.set_raw_motors(self,0,0,0,0)
 
         return
 
     @staticmethod
-    def stop(heading):
-        RVRDrive.drive(0, heading)
-
-        return
-
-
     def set_raw_motors(self,left_mode, left_speed, right_mode, right_speed):
         if left_mode < 0 or left_mode > 2:
             left_mode = 0
@@ -93,15 +87,15 @@ class RVRDrive:
             right = - right
 
         # Call raw motor function
-        self.set_raw_motors(leftMode,left,rightMode,right)
+        self.set_raw_motors(self,leftMode,left,rightMode,right)
 
     def float_to_hex(self,f):
         #return hex(struct.unpack('<I', struct.pack('<f', f))[0])
         result = bytearray(struct.pack('>f', f))
 
         return result
-        
-    
+
+
     def drive_to_position_si(self,yaw_angle, x, y, speed):
         SOP = 0x8d
         FLAGS = 0x06
@@ -138,7 +132,14 @@ class RVRDrive:
 
         return
 
+    def sensor_start(self):
+        self.conf_streaming()
+        time.sleep(0.2) 
+        self.start_streaming()
+        time.sleep(0.2) 
+        
     def conf_streaming(self):
+
         SOP = 0x8d
         FLAGS = 0x02
         TARGET_ID = 0x02
@@ -149,13 +150,15 @@ class RVRDrive:
         EOP = 0xD8
 
         output_packet = [SOP, FLAGS, DEVICE_ID,COMMAND_ID,SEQ]
-        output_packet.extend([0x02,0x00, 0x06, 0x02,0x00,0x01,0x00])
+        #output_packet = [0x8d, 0x02, 0x18,0x39,0x01]
+        output_packet.extend([0x02,0x00, 0x06, 0x02,0x00,0x01,0x01])
 
-        output_packet.extend([~((sum(output_packet) - SOP) % 256) & 0x00FF,EOP])
-        uart.write(bytearray(output_packet))
-        return bytearray(output_packet)
+        output_packet.extend([~((sum(output_packet) - SOP) % 256) & 0x00FF,0xD8])
+        self._uart.write(bytearray(output_packet))
+        #return bytearray(output_packet)
 
     def start_streaming(self):
+
         SOP = 0x8d
         FLAGS = 0x02
         TARGET_ID = 0x01
@@ -166,11 +169,12 @@ class RVRDrive:
         EOP = 0xD8
 
         output_packet = [SOP, FLAGS, DEVICE_ID,COMMAND_ID,SEQ]
+        #output_packet = [0x8d,0x02,0x18,0x3A,0x02]
         output_packet.extend([0x00,0x0F])
 
-        output_packet.extend([~((sum(output_packet) - SOP) % 256) & 0x00FF,EOP])
-        uart.write(bytearray(output_packet))
-        return bytearray(output_packet)
+        output_packet.extend([~((sum(output_packet) - SOP) % 256) & 0x00FF,0xD8])
+        self._uart.write(bytearray(output_packet))
+        #return bytearray(output_packet)
 
     def set_all_leds(self, red, green, blue):
         led_data = [
@@ -185,8 +189,9 @@ class RVRDrive:
 
 
     def update_sensors(self):
+        last_packet = bytearray([0,0,0,0,0])
         if uart.in_waiting != 0:
-            data_read = uart.read(uart.in_waiting)
+            data_read = self._uart.read(uart.in_waiting)
             index_2 = -1
             index = 0
             for index in range(len(data_read)):
@@ -198,22 +203,34 @@ class RVRDrive:
                         last_packet = data_read[index_1:index_2+1]
                         data_read = data_read[index_2:]
                         index = index_2
-                        
                 else:
                     index += 1
-                    
+
             if(last_packet[4]==0x3d):
-                
-                xRaw = struct.unpack('>I', last_packet[7:11])[0]
-                yRaw = struct.unpack('>I', last_packet[11:15])[0]
-                xScaled = self.scale_uint16_sensor(xRaw)
-                yScaled = self.scale_uint16_sensor(yRaw)
-                #struct.unpack('c',last_packet[17:18])[0]
-                return (xScaled,yScaled,)
-                
-    def scale_uint16_sensor(self,value):
-        return (value - 2147483647)/(2147483647)*16000 
-         
+                xScaled = self._scale_uint32_sensor(struct.unpack('>I', last_packet[7:11])[0])
+                yScaled = self._scale_uint32_sensor(struct.unpack('>I', last_packet[11:15])[0])
+                angle = int(self._scale_angle_value(struct.unpack('>H',last_packet[19:21])[0]))
+                #return (self._scale_uint16_sensor(struct.unpack('>H', last_packet[7:9])[0]),self._scale_uint16_sensor(struct.unpack('>H', last_packet[9:11])[0]),self._scale_angle_value(struct.unpack('b',last_packet[15:16])[0]))
+                self._location = [xScaled,yScaled,angle]
+    def _scale_uint32_sensor(self,value):
+        return (value - 2147483647)/(2147483647)*16000
+
+
+    def _scale_uint16_sensor(self,value):
+        return (value - 65536)/(65536)*16000
+
+    def _scale_angle_value(self,value):
+        return -(-180 - 180)*(value - 32768)/(0 - 65536) 
+        
+    def get_x(self):
+        return self._location[0]
+
+    def get_y(self):
+        return self._location[1]
+
+    def get_heading(self):
+        return self._location[2]
+
     def wake(self):
         power_data = [0x8D, 0x3E, 0x11, 0x01, 0x13, 0x0D, 0x00]
         power_data.extend([~((sum(power_data) - 0x8D) % 256) & 0x00FF, 0xD8])
@@ -225,4 +242,4 @@ class RVRDrive:
         power_data.extend([~((sum(power_data) - 0x8D) % 256) & 0x00FF, 0xD8])
         self._uart.write(bytearray(power_data))
         return
-    
+
