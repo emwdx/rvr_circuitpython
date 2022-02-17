@@ -1,0 +1,10 @@
+Pin definition Microcontroller to RVR
+
+                 blackpill  rp2040  lilygo  Metro M4 express
+        UART TX     A2       GP4      IO1          D1
+             RX     A3       GP5      IO2          D0
+
+Ultrasonic trigger  B1       GP10     IO5          D11
+           echo     B0       GP11     IO4          D10
+
+
