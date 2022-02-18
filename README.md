@@ -19,7 +19,7 @@ We use the following standard pins to communicate with the Sphero RVR:
 ## sphero_rvr.py library ##
 The annotated library has the API that I've given my students to use during class. Not everything is there at this point - a work in progress.
 
-The .mpy file is the compiled library for [Circuitpython 7.1.1](https://circuitpython.org). This file 
+The .mpy file is the compiled version of the library for [Circuitpython 7.1.1](https://circuitpython.org). 
 
 ## Big thanks! ##
 * [@kreier](https://github.com/kreier/) for doing testing with serial communication with RVRs and ultrasonic sensors for several boards
