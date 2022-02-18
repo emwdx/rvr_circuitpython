@@ -5,7 +5,7 @@ My notes learning to use the Sphero RVR API for the Drive to Position functional
 
 ## Pin connection definition Microcontroller - RVR
 
-We use the following standard pins to communicate with the Sphero RVR:
+We use the following standard pins to communicate with the Sphero RVR with a HCSR04 Ultrasonic Sensor attached to the front:
 
 |                    | blackpill | rp2040 | lilygo ESP32-S2 | Metro M4 express | Metro M0 express**
 |--------------------|:---------:|:------:|:---------------:|:----------------:|:----------------:|
