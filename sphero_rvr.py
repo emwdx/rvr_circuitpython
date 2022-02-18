@@ -9,7 +9,6 @@ class RawMotorModes:
     BACKWARD = 2
 
 uart = busio.UART(board.D2, board.D3, baudrate=115200)
-
 class RVRDrive:
     def __init__(self):
         self._uart = uart
@@ -132,6 +131,7 @@ class RVRDrive:
 
         return
 
+
     def sensor_start(self):
         self.conf_streaming()
         time.sleep(0.2) 
@@ -150,12 +150,14 @@ class RVRDrive:
         EOP = 0xD8
 
         output_packet = [SOP, FLAGS, DEVICE_ID,COMMAND_ID,SEQ]
-        #output_packet = [0x8d, 0x02, 0x18,0x39,0x01]
-        output_packet.extend([0x02,0x00, 0x06, 0x02,0x00,0x01,0x01])
+
+        #output_packet = [0x8d, 0x02, 0x18, 0x39, 0x01]
+        output_packet.extend([0x02, 0x00, 0x06, 0x02, 0x00, 0x01, 0x01])
 
         output_packet.extend([~((sum(output_packet) - SOP) % 256) & 0x00FF,0xD8])
         self._uart.write(bytearray(output_packet))
         #return bytearray(output_packet)
+
 
     def start_streaming(self):
 
