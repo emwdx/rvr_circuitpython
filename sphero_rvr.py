@@ -25,8 +25,8 @@ class RVRDrive:
         speed = int(speed)
         if speed < 0:
             speed *= -1
-            heading += 180
-            heading %= 360
+            #heading += 180
+            #heading %= 360
             flags = 0x01
 
         drive_data = [
