@@ -12,6 +12,9 @@ sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.D11, echo_pin=board.D10)    # M
 
 rvr = RVRDrive(uart = busio.UART(board.D1, board.D0, baudrate=115200))       # M4 Metro express
 
+
+# CODE BELOW THIS LINE WILL WORK FOR ANY BOARD ********************************************
+
 time.sleep(0.5)
 
 rvr.set_all_leds(255,0,0) #set leds to red
@@ -30,7 +33,6 @@ rvr.sensor_start()
 
 print("sensor_start")
 
-# CODE BELOW THIS LINE WILL WORK FOR ANY BOARD ********************************************
 
 MAX_SPEED = 100
 rvr.sensor_start()
