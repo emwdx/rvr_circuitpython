@@ -137,7 +137,8 @@ class RVRDrive:
 
     # RVRDrive.get_x()
     # inputs: none
-    # returns the x coordinate of the RVR in meters relative to the origin (0,0).
+    # returns the x coordinate of the RVR in meters relative to the origin (0,0). 
+    # NOTE: you must call RVRDrive.update_sensors() before using this!
     def get_x(self):
         return self._location[0]
 
@@ -145,6 +146,7 @@ class RVRDrive:
     # RVRDrive.get_y()
     # inputs: none
     # returns the y coordinate of the RVR in meters relative to the origin (0,0).
+    # NOTE: you must call RVRDrive.update_sensors() before using this!
     def get_y(self):
         return self._location[1]
 
@@ -152,6 +154,7 @@ class RVRDrive:
     # RVRDrive.get_heading()
     # inputs: none
     # returns the heading of the RVR as an angle between -180.0 and 180 degrees. North is 0, East is 90, West is -90.
+    # NOTE: you must call RVRDrive.update_sensors() before using this!
     def get_heading(self):
         return self._location[2]
 
