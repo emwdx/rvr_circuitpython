@@ -30,6 +30,8 @@ rvr.sensor_start()
 
 print("sensor_start")
 
+# CODE BELOW THIS LINE WILL WORK FOR ANY BOARD ********************************************
+
 MAX_SPEED = 100
 rvr.sensor_start()
 
